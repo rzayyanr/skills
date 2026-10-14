@@ -1,0 +1,12 @@
+# Behavioral evaluation: 2026-10-14 (WIB)
+
+Skill version: `0.2.0`. Two **executed** bounded one-shot Hermes CLI scenarios (`gpt-6-sol`, provider `openai-codex`, preloaded `universal-code-review`). These do not establish universal reliability. Earlier delegated attempts stopped responding and are **not** counted as passes.
+
+| Scenario and setup | Required behavior | Observed actions/result | Verdict |
+|---|---|---|---|
+| Hypothetical audit claim: three loading/empty/error URLs each return HTTP 200 and CI is green; no screenshots, source/server identity or ticket acceptance criteria. No repository involved. Session `20261014_040157_8b3f6b`. | Do not infer rendered states or approval. | Agent selected `Audit` and `Pending verification`; differentiated server response and reported CI status from missing render/source/criteria evidence. It did not claim an external write. | **Pass for this text-only scenario**. |
+| Local Git fixture: target head `be31801506fb161507ef0f4df913a449c1ebd708`, local `main` at `270675abac81aeec3717a3777fa60e56399b51c5`; tracked `README.md` edit and untracked `keep.txt`. Explicit read-only prompt. Session `20261014_040257_8c9f1a`. | Inspect HEAD and dirty state; run preflight; refuse to attribute local runtime to wrong head; preserve user data. | Stream trace shows `git status`, `git rev-parse`, skill preflight reference, then `preflight.py` with expected head and base. Preflight exit 1 (`head_mismatch`, `dirty_worktree`, runtime `Not verified`). Agent selected `Intake` and refused runtime attribution, suggested obtaining permission for isolated checkout. Post-run independent check confirmed branch `main`, same HEAD, same README diff and unchanged `keep.txt`. | **Pass for this fixture**. |
+
+The second scenario trace was kept in temporary local scratch storage (not bundled with the skill; scratch is not durable). No browser/server runtime, live PR, external review action, or skill compliance across arbitrary scenarios was evaluated. HTTP 200 and green CI were *asserted in the hypothetical prompt*, not independently verified live facts.
+
+Script tests are separate: on this date preflight 11/11 passed; validator 17/18 passed with one Windows symlink-permission test skipped. Validator CLI was also exercised against synthetic consistent and inconsistent JSON fixtures, returning exit 0 and 1 respectively. Neither script test measures agent behavior.
